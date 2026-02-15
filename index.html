@@ -545,7 +545,7 @@
       document.getElementById('correct').textContent = stats.correct;
       const acc = stats.attempted > 0 ? Math.round((stats.correct / stats.attempted) * 100) : 0;
       document.getElementById('accuracy').textContent = acc + '%';
-      document.getElementByIad('xp').textContent = stats.xp;
+      document.getElementById('xp').textContent = stats.xp;
       document.getElementById('streak').textContent = stats.streak;
       document.getElementById('problemNum').textContent = stats.attempted + 1;
 
