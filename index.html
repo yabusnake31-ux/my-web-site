@@ -658,43 +658,52 @@
 
     // 正答処理
     function handleCorrect() {
-      const xp = showingAnswer ? 5 : showingHint ? 8 : 10;
-      const today = new Date().toDateString();
-      
-      // 連続学習日数の更新
-      if (stats.lastStudyDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+      try {
+        const xp = showingAnswer ? 5 : showingHint ? 8 : 10;
+        const today = new Date().toDateString();
         
-        if (stats.lastStudyDate === yesterday.toDateString()) {
-          // 昨日勉強していたら連続日数を増やす
-          stats.streak++;
-        } else if (stats.lastStudyDate === null) {
-          // 初回の場合
-          stats.streak = 1;
-        } else {
-          // 日が空いていたらリセット
-          stats.streak = 1;
+        // 連続学習日数の更新
+        if (stats.lastStudyDate !== today) {
+          if (stats.lastStudyDate) {
+            const lastDate = new Date(stats.lastStudyDate);
+            const todayDate = new Date(today);
+            const diffTime = todayDate - lastDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+              // 昨日勉強していたら連続日数を増やす
+              stats.streak++;
+            } else {
+              // 日が空いていたらリセット
+              stats.streak = 1;
+            }
+          } else {
+            // 初回の場合
+            stats.streak = 1;
+          }
+          stats.lastStudyDate = today;
         }
-        stats.lastStudyDate = today;
+        
+        stats.attempted++;
+        stats.correct++;
+        stats.xp += xp;
+        
+        // 分野別統計を更新
+        const problemType = PROBLEMS[currentProblem].type;
+        if (!stats.typeStats[problemType]) {
+          stats.typeStats[problemType] = { attempted: 0, correct: 0 };
+        }
+        stats.typeStats[problemType].attempted++;
+        stats.typeStats[problemType].correct++;
+        
+        save();
+        loadProblem();
+        updateDisplay();
+        updateRadarChart();
+      } catch (e) {
+        console.error('Error in handleCorrect:', e);
+        alert('エラーが発生しました。ページをリロードしてください。');
       }
-      
-      stats.attempted++;
-      stats.correct++;
-      stats.xp += xp;
-      
-      // 分野別統計を更新
-      const problemType = PROBLEMS[currentProblem].type;
-      if (!stats.typeStats[problemType]) {
-        stats.typeStats[problemType] = { attempted: 0, correct: 0 };
-      }
-      stats.typeStats[problemType].attempted++;
-      stats.typeStats[problemType].correct++;
-      
-      save();
-      loadProblem();
-      updateDisplay();
-      updateRadarChart();
     }
 
     // ミスモーダル表示
@@ -704,40 +713,49 @@
 
     // ミス記録
     function recordMistake(type) {
-      const today = new Date().toDateString();
-      
-      // 連続学習日数の更新
-      if (stats.lastStudyDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+      try {
+        const today = new Date().toDateString();
         
-        if (stats.lastStudyDate === yesterday.toDateString()) {
-          stats.streak++;
-        } else if (stats.lastStudyDate === null) {
-          stats.streak = 1;
-        } else {
-          stats.streak = 1;
+        // 連続学習日数の更新
+        if (stats.lastStudyDate !== today) {
+          if (stats.lastStudyDate) {
+            const lastDate = new Date(stats.lastStudyDate);
+            const todayDate = new Date(today);
+            const diffTime = todayDate - lastDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+              stats.streak++;
+            } else {
+              stats.streak = 1;
+            }
+          } else {
+            stats.streak = 1;
+          }
+          stats.lastStudyDate = today;
         }
-        stats.lastStudyDate = today;
+        
+        stats.attempted++;
+        stats.xp += 2;
+        if (!stats.mistakes[type]) stats.mistakes[type] = 0;
+        stats.mistakes[type]++;
+        
+        // 分野別統計を更新（失敗）
+        const problemType = PROBLEMS[currentProblem].type;
+        if (!stats.typeStats[problemType]) {
+          stats.typeStats[problemType] = { attempted: 0, correct: 0 };
+        }
+        stats.typeStats[problemType].attempted++;
+        
+        save();
+        document.getElementById('mistakeModal').classList.remove('show');
+        loadProblem();
+        updateDisplay();
+        updateRadarChart();
+      } catch (e) {
+        console.error('Error in recordMistake:', e);
+        alert('エラーが発生しました。ページをリロードしてください。');
       }
-      
-      stats.attempted++;
-      stats.xp += 2;
-      if (!stats.mistakes[type]) stats.mistakes[type] = 0;
-      stats.mistakes[type]++;
-      
-      // 分野別統計を更新（失敗）
-      const problemType = PROBLEMS[currentProblem].type;
-      if (!stats.typeStats[problemType]) {
-        stats.typeStats[problemType] = { attempted: 0, correct: 0 };
-      }
-      stats.typeStats[problemType].attempted++;
-      
-      save();
-      document.getElementById('mistakeModal').classList.remove('show');
-      loadProblem();
-      updateDisplay();
-      updateRadarChart();
     }
 
     // ミス分析更新
