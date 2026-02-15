@@ -346,6 +346,13 @@
           <div style="font-size: 1.1rem;">連続学習中！</div>
         </div>
       </div>
+
+      <div class="card">
+        <h2>🎯 分野別習熟度</h2>
+        <div style="width: 100%; height: 400px; display: flex; align-items: center; justify-content: center;">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <!-- トレーニング -->
@@ -414,6 +421,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     // ランク定義
     const RANKS = [
@@ -510,12 +518,15 @@
       attempted: 0,
       correct: 0,
       streak: 0,
+      lastStudyDate: null,
       xp: 0,
-      mistakes: {}
+      mistakes: {},
+      typeStats: {}  // 分野別統計を追加
     };
     let currentProblem = 0;
     let showingHint = false;
     let showingAnswer = false;
+    let radarChart = null;
 
     // 初期化
     function init() {
@@ -525,6 +536,7 @@
       }
       loadProblem();
       updateDisplay();
+      createRadarChart();
     }
 
     // 表示更新
@@ -647,13 +659,42 @@
     // 正答処理
     function handleCorrect() {
       const xp = showingAnswer ? 5 : showingHint ? 8 : 10;
+      const today = new Date().toDateString();
+      
+      // 連続学習日数の更新
+      if (stats.lastStudyDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (stats.lastStudyDate === yesterday.toDateString()) {
+          // 昨日勉強していたら連続日数を増やす
+          stats.streak++;
+        } else if (stats.lastStudyDate === null) {
+          // 初回の場合
+          stats.streak = 1;
+        } else {
+          // 日が空いていたらリセット
+          stats.streak = 1;
+        }
+        stats.lastStudyDate = today;
+      }
+      
       stats.attempted++;
       stats.correct++;
-      stats.streak++;
       stats.xp += xp;
+      
+      // 分野別統計を更新
+      const problemType = PROBLEMS[currentProblem].type;
+      if (!stats.typeStats[problemType]) {
+        stats.typeStats[problemType] = { attempted: 0, correct: 0 };
+      }
+      stats.typeStats[problemType].attempted++;
+      stats.typeStats[problemType].correct++;
+      
       save();
       loadProblem();
       updateDisplay();
+      updateRadarChart();
     }
 
     // ミスモーダル表示
@@ -663,14 +704,40 @@
 
     // ミス記録
     function recordMistake(type) {
+      const today = new Date().toDateString();
+      
+      // 連続学習日数の更新
+      if (stats.lastStudyDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (stats.lastStudyDate === yesterday.toDateString()) {
+          stats.streak++;
+        } else if (stats.lastStudyDate === null) {
+          stats.streak = 1;
+        } else {
+          stats.streak = 1;
+        }
+        stats.lastStudyDate = today;
+      }
+      
       stats.attempted++;
       stats.xp += 2;
       if (!stats.mistakes[type]) stats.mistakes[type] = 0;
       stats.mistakes[type]++;
+      
+      // 分野別統計を更新（失敗）
+      const problemType = PROBLEMS[currentProblem].type;
+      if (!stats.typeStats[problemType]) {
+        stats.typeStats[problemType] = { attempted: 0, correct: 0 };
+      }
+      stats.typeStats[problemType].attempted++;
+      
       save();
       document.getElementById('mistakeModal').classList.remove('show');
       loadProblem();
       updateDisplay();
+      updateRadarChart();
     }
 
     // ミス分析更新
@@ -707,6 +774,82 @@
     // 保存
     function save() {
       localStorage.setItem('integrationMasterStats', JSON.stringify(stats));
+    }
+
+    // レーダーチャート作成
+    function createRadarChart() {
+      const ctx = document.getElementById('radarChart');
+      if (!ctx) return;
+      
+      const types = [...new Set(PROBLEMS.map(p => p.type))];
+      const data = types.map(type => {
+        const typeData = stats.typeStats[type];
+        if (!typeData || typeData.attempted === 0) return 0;
+        return Math.round((typeData.correct / typeData.attempted) * 100);
+      });
+      
+      radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: types,
+          datasets: [{
+            label: '正答率 (%)',
+            data: data,
+            fill: true,
+            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+            borderColor: 'rgb(102, 126, 234)',
+            pointBackgroundColor: 'rgb(102, 126, 234)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(102, 126, 234)',
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              min: 0,
+              ticks: {
+                stepSize: 20,
+                font: {
+                  size: 12
+                }
+              },
+              pointLabels: {
+                font: {
+                  size: 13,
+                  weight: 'bold'
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+    }
+
+    // レーダーチャート更新
+    function updateRadarChart() {
+      if (!radarChart) return;
+      
+      const types = [...new Set(PROBLEMS.map(p => p.type))];
+      const data = types.map(type => {
+        const typeData = stats.typeStats[type];
+        if (!typeData || typeData.attempted === 0) return 0;
+        return Math.round((typeData.correct / typeData.attempted) * 100);
+      });
+      
+      radarChart.data.datasets[0].data = data;
+      radarChart.update('active');
     }
 
     // モーダル外クリックで閉じる
