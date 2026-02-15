@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>定積分 練習アプリ - 数学Ⅲ</title>
+  <title>定積分マスター - 成長が見える練習帳</title>
   
   <!-- KaTeX CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
   <style>
     * {
@@ -19,299 +19,528 @@
     }
 
     body {
-      font-family: 'Crimson Pro', serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      font-family: 'Noto Sans JP', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
-    }
-
-    .math-block, .math-inline {
-      font-size: inherit;
-    }
-
-    .math-block {
-      display: block;
-      margin: 10px 0;
     }
 
     .app-container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid #2c3e50;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      color: #1a252f;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      color: #5a6c7d;
-      font-weight: 400;
-    }
-
-    .stats-bar {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 30px;
       padding: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      flex-wrap: wrap;
     }
 
-    .stat-item {
+    /* タブナビゲーション */
+    .tab-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-button:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ダッシュボード */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ランク表示 */
+    .rank-display {
       text-align: center;
-      padding: 0 20px;
+      padding: 30px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      border-radius: 15px;
+    }
+
+    .rank-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .rank-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .xp-bar {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      height: 100%;
+      background: white;
+      transition: width 0.5s ease;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .xp-text {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    /* 統計カード */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #667eea;
+      font-family: 'JetBrains Mono', monospace;
     }
 
     .stat-label {
       font-size: 0.9rem;
       color: #7f8c8d;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
+      margin-top: 5px;
     }
 
-    .stat-value {
+    /* ストリーク表示 */
+    .streak-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 20px;
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      border-radius: 15px;
+      color: white;
+    }
+
+    .streak-icon {
+      font-size: 3rem;
+    }
+
+    .streak-info {
+      text-align: left;
+    }
+
+    .streak-number {
       font-size: 2rem;
-      color: #2c3e50;
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
+      font-weight: 900;
+    }
+
+    .streak-text {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* レーダーチャート */
+    .chart-container {
+      width: 100%;
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* トレーニング画面 */
+    .training-container {
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     .problem-card {
       background: white;
-      padding: 50px 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-      border: 1px solid #e1e8ed;
-    }
-
-    .problem-label {
-      font-size: 0.95rem;
-      color: #7f8c8d;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
       margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
     }
 
-    .problem-text {
-      font-size: 2.5rem;
-      color: #1a252f;
-      text-align: center;
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 30px;
-      padding: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e1e8ed;
+    }
+
+    .problem-type {
+      font-size: 0.9rem;
+      color: #667eea;
+      font-weight: 700;
+      background: #f0f3ff;
+      padding: 8px 15px;
+      border-radius: 20px;
+    }
+
+    .problem-number {
+      font-size: 1rem;
+      color: #7f8c8d;
+      font-weight: 500;
+    }
+
+    .problem-display {
+      font-size: 2.5rem;
+      text-align: center;
+      padding: 40px;
       background: #f8f9fa;
-      border-radius: 8px;
-      border-left: 4px solid #3498db;
-      min-height: 120px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      min-height: 150px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .answer-section {
-      margin-top: 30px;
-      padding-top: 30px;
-      border-top: 2px dashed #e1e8ed;
-    }
-
-    .answer-section.hidden {
+    .hint-section {
+      background: #fff9e6;
+      border-left: 4px solid #ffd700;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
       display: none;
     }
 
-    .steps {
-      margin-bottom: 25px;
+    .hint-section.show {
+      display: block;
+      animation: slideDown 0.3s ease;
     }
 
-    .step-label {
-      font-size: 1rem;
-      color: #7f8c8d;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    @keyframes slideDown {
+      from { opacity: 0; max-height: 0; }
+      to { opacity: 1; max-height: 500px; }
+    }
+
+    .hint-title {
+      font-weight: 700;
+      color: #d4a600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .answer-section {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .answer-section.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .answer-steps {
+      margin-bottom: 20px;
     }
 
     .step {
-      font-size: 1.2rem;
-      color: #34495e;
-      margin-bottom: 15px;
-      padding: 12px 20px;
-      line-height: 2;
-      background: #f8f9fa;
-      border-radius: 6px;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: white;
+      border-radius: 8px;
+      font-size: 1.1rem;
     }
 
-    .answer-box {
+    .final-answer {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 30px;
+      padding: 25px;
       border-radius: 12px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
 
-    .answer-label {
+    .final-answer-label {
       font-size: 1rem;
-      margin-bottom: 10px;
       opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
+      margin-bottom: 10px;
     }
 
-    .answer-value {
-      font-size: 2.2rem;
+    .final-answer-value {
+      font-size: 2rem;
       font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
     }
 
-    .controls {
+    /* ボタン */
+    .button-group {
       display: flex;
       gap: 15px;
-      justify-content: center;
       flex-wrap: wrap;
     }
 
     .btn {
-      padding: 16px 32px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      font-family: 'Crimson Pro', serif;
-      letter-spacing: 0.3px;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .btn-correct {
-      background: #2ecc71;
-      color: white;
-      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    .btn-hint {
+      background: #ffd700;
+      color: #333;
     }
 
-    .btn-correct:hover {
-      background: #27ae60;
+    .btn-hint:hover {
+      background: #ffc700;
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
-    }
-
-    .btn-incorrect {
-      background: #e74c3c;
-      color: white;
-      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-    }
-
-    .btn-incorrect:hover {
-      background: #c0392b;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
     }
 
     .btn-show {
       background: #9b59b6;
       color: white;
-      box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
     }
 
     .btn-show:hover {
       background: #8e44ad;
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(155, 89, 182, 0.4);
+      box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
     }
 
-    .btn-hide {
-      background: #95a5a6;
+    .btn-correct {
+      background: #2ecc71;
       color: white;
-      box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
     }
 
-    .btn-hide:hover {
-      background: #7f8c8d;
+    .btn-correct:hover {
+      background: #27ae60;
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(149, 165, 166, 0.4);
+      box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
     }
 
-    .btn-reset {
+    .btn-incorrect {
       background: #e74c3c;
       color: white;
-      padding: 12px 24px;
-      font-size: 0.95rem;
     }
 
-    .btn-reset:hover {
+    .btn-incorrect:hover {
       background: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+
+    /* ミス分析モーダル */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 35px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .mistake-options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mistake-option {
+      padding: 15px;
+      background: #f8f9fa;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .mistake-option:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
       transform: translateY(-2px);
     }
 
-    .btn:active {
-      transform: translateY(0);
+    /* 分析ページ */
+    .analysis-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .mistake-analysis {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+    }
+
+    .mistake-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .mistake-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .mistake-name {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .mistake-count {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mistake-bar {
+      width: 100px;
+      height: 8px;
+      background: #e1e8ed;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .mistake-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.5s ease;
+    }
+
+    .mistake-number {
+      font-weight: 700;
+      color: #667eea;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        min-width: 100%;
+      }
+
+      .tab-nav {
+        flex-direction: column;
+      }
     }
 
     .loading {
       text-align: center;
       padding: 100px 20px;
       font-size: 1.5rem;
-      color: #7f8c8d;
-    }
-
-    @media (max-width: 600px) {
-      .app-container {
-        padding: 20px 15px;
-      }
-
-      .header h1 {
-        font-size: 1.8rem;
-      }
-
-      .problem-text {
-        font-size: 1.8rem;
-        padding: 15px;
-      }
-
-      .stats-bar {
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .stat-item {
-        padding: 10px;
-      }
-
-      .controls {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
+      color: white;
     }
   </style>
 </head>
@@ -325,16 +554,18 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
-  <!-- Babel Standalone for JSX -->
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // 数式レンダリングコンポーネント
+    // 数式レンダリング
     const MathDisplay = ({ latex, block = false }) => {
       const containerRef = useRef(null);
-
       useEffect(() => {
         if (containerRef.current && window.katex) {
           try {
@@ -343,684 +574,776 @@
               displayMode: block
             });
           } catch (e) {
-            console.error('KaTeX rendering error:', e);
             containerRef.current.textContent = latex;
           }
         }
       }, [latex, block]);
-
-      return <span ref={containerRef} className={block ? "math-block" : "math-inline"} />;
+      return <span ref={containerRef} />;
     };
 
-    // 問題生成関数
-    const generateProblem = () => {
-      const types = [
-        'trigonometric',
-        'exponential',
-        'rational',
-        'mixed',
-        'poly_trig',
-        'poly_exp',
-        'substitution',
-        'parts',
-        'sqrt_function',
-        'log_power',
-        'trig_power',
-        'derivative_over_function',
-        'log_derivative'
-      ];
-      
-      const type = types[Math.floor(Math.random() * types.length)];
-      
-      switch(type) {
-        case 'trigonometric':
-          return generateTrigonometric();
-        case 'exponential':
-          return generateExponential();
-        case 'rational':
-          return generateRational();
-        case 'mixed':
-          return generateMixed();
-        case 'poly_trig':
-          return generatePolyTrig();
-        case 'poly_exp':
-          return generatePolyExp();
-        case 'substitution':
-          return generateSubstitution();
-        case 'parts':
-          return generateParts();
-        case 'sqrt_function':
-          return generateSqrtFunction();
-        case 'log_power':
-          return generateLogPower();
-        case 'trig_power':
-          return generateTrigPower();
-        case 'derivative_over_function':
-          return generateDerivativeOverFunction();
-        case 'log_derivative':
-          return generateLogDerivative();
-        default:
-          return generateTrigonometric();
-      }
+    // 問題タイプの定義
+    const PROBLEM_TYPES = {
+      trigonometric: { name: '三角関数', color: '#e74c3c' },
+      exponential: { name: '指数関数', color: '#3498db' },
+      rational: { name: '有理関数', color: '#2ecc71' },
+      poly_trig: { name: '多項式×三角', color: '#f39c12' },
+      poly_exp: { name: '多項式×指数', color: '#9b59b6' },
+      substitution: { name: '置換積分', color: '#1abc9c' },
+      parts: { name: '部分積分', color: '#e67e22' },
+      sqrt_function: { name: '無理関数', color: '#95a5a6' },
+      log_power: { name: '対数累乗', color: '#16a085' },
+      trig_power: { name: '三角関数累乗', color: '#c0392b' },
+      derivative_over_function: { name: "f'(x)/f(x)", color: '#2980b9' },
+      log_derivative: { name: '対数微分', color: '#8e44ad' }
     };
 
-    const generateSqrtFunction = () => {
-      const patterns = [
-        {
-          problem: `\\int_{0}^{3} \\sqrt{x + 1} \\, dx`,
-          steps: [
-            `t = x + 1 \\text{ とおくと } dt = dx`,
-            `x: 0 \\to 3 \\text{ のとき } t: 1 \\to 4`,
-            `= \\int_{1}^{4} t^{\\frac{1}{2}} \\, dt`,
-            `= \\left[ \\frac{2}{3}t^{\\frac{3}{2}} \\right]_{1}^{4}`,
-            `= \\frac{2}{3}(8 - 1) = \\frac{14}{3}`
-          ],
-          answer: '\\frac{14}{3}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{1} \\frac{1}{\\sqrt{x + 1}} \\, dx`,
-          steps: [
-            `t = x + 1 \\text{ とおくと } dt = dx`,
-            `x: 0 \\to 1 \\text{ のとき } t: 1 \\to 2`,
-            `= \\int_{1}^{2} t^{-\\frac{1}{2}} \\, dt`,
-            `= \\left[ 2t^{\\frac{1}{2}} \\right]_{1}^{2}`,
-            `= 2(\\sqrt{2} - 1)`
-          ],
-          answer: '2(\\sqrt{2} - 1)',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{8} \\sqrt[3]{x + 1} \\, dx`,
-          steps: [
-            `t = x + 1 \\text{ とおくと } dt = dx`,
-            `x: 0 \\to 8 \\text{ のとき } t: 1 \\to 9`,
-            `= \\int_{1}^{9} t^{\\frac{1}{3}} \\, dt`,
-            `= \\left[ \\frac{3}{4}t^{\\frac{4}{3}} \\right]_{1}^{9}`,
-            `= \\frac{3}{4}(27 - 1) = \\frac{39}{2}`
-          ],
-          answer: '\\frac{39}{2}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
+    // ランクシステム
+    const RANKS = [
+      { name: '積分見習い', minXP: 0, icon: '🌱' },
+      { name: '積分初級者', minXP: 50, icon: '🌿' },
+      { name: '積分中級者', minXP: 150, icon: '🌳' },
+      { name: '積分上級者', minXP: 300, icon: '⭐' },
+      { name: '積分達人', minXP: 500, icon: '💫' },
+      { name: '積分魔術師', minXP: 1000, icon: '🔮' },
+      { name: '積分マスター', minXP: 2000, icon: '👑' }
+    ];
 
-    const generateLogPower = () => {
-      const patterns = [
-        {
-          problem: `\\int_{1}^{e} \\frac{(\\log x)^{2}}{x} \\, dx`,
-          steps: [
-            `t = \\log x \\text{ とおくと } dt = \\frac{1}{x} \\, dx`,
-            `x: 1 \\to e \\text{ のとき } t: 0 \\to 1`,
-            `= \\int_{0}^{1} t^{2} \\, dt`,
-            `= \\left[ \\frac{t^{3}}{3} \\right]_{0}^{1}`,
-            `= \\frac{1}{3}`
-          ],
-          answer: '\\frac{1}{3}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{1}^{e^{2}} \\frac{\\log x}{x} \\, dx`,
-          steps: [
-            `t = \\log x \\text{ とおくと } dt = \\frac{1}{x} \\, dx`,
-            `x: 1 \\to e^{2} \\text{ のとき } t: 0 \\to 2`,
-            `= \\int_{0}^{2} t \\, dt`,
-            `= \\left[ \\frac{t^{2}}{2} \\right]_{0}^{2}`,
-            `= 2`
-          ],
-          answer: '2',
-          isLatex: false
-        },
-        {
-          problem: `\\int_{1}^{e} \\frac{(\\log x)^{3}}{x} \\, dx`,
-          steps: [
-            `t = \\log x \\text{ とおくと } dt = \\frac{1}{x} \\, dx`,
-            `x: 1 \\to e \\text{ のとき } t: 0 \\to 1`,
-            `= \\int_{0}^{1} t^{3} \\, dt`,
-            `= \\left[ \\frac{t^{4}}{4} \\right]_{0}^{1}`,
-            `= \\frac{1}{4}`
-          ],
-          answer: '\\frac{1}{4}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
+    // ミスのカテゴリ
+    const MISTAKE_TYPES = [
+      '積分公式の忘れ',
+      '符号のミス',
+      '代入計算のミス',
+      '方針の間違い',
+      'その他'
+    ];
 
-    const generateTrigPower = () => {
-      const patterns = [
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{2}} \\sin^{2} x \\, dx`,
-          steps: [
-            `\\text{半角の公式: } \\sin^{2} x = \\frac{1 - \\cos 2x}{2}`,
-            `= \\int_{0}^{\\frac{\\pi}{2}} \\frac{1 - \\cos 2x}{2} \\, dx`,
-            `= \\left[ \\frac{x}{2} - \\frac{\\sin 2x}{4} \\right]_{0}^{\\frac{\\pi}{2}}`,
-            `= \\frac{\\pi}{4} - 0`,
-            `= \\frac{\\pi}{4}`
-          ],
-          answer: '\\frac{\\pi}{4}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{2}} \\cos^{2} x \\, dx`,
-          steps: [
-            `\\text{半角の公式: } \\cos^{2} x = \\frac{1 + \\cos 2x}{2}`,
-            `= \\int_{0}^{\\frac{\\pi}{2}} \\frac{1 + \\cos 2x}{2} \\, dx`,
-            `= \\left[ \\frac{x}{2} + \\frac{\\sin 2x}{4} \\right]_{0}^{\\frac{\\pi}{2}}`,
-            `= \\frac{\\pi}{4} + 0`,
-            `= \\frac{\\pi}{4}`
-          ],
-          answer: '\\frac{\\pi}{4}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{2}} \\sin^{3} x \\, dx`,
-          steps: [
-            `\\sin^{3} x = \\sin x (1 - \\cos^{2} x)`,
-            `= \\int_{0}^{\\frac{\\pi}{2}} (\\sin x - \\sin x \\cos^{2} x) \\, dx`,
-            `t = \\cos x \\text{ とおくと } dt = -\\sin x \\, dx`,
-            `= [-\\cos x + \\frac{\\cos^{3} x}{3}]_{0}^{\\frac{\\pi}{2}}`,
-            `= 0 + 1 - \\frac{1}{3} = \\frac{2}{3}`
-          ],
-          answer: '\\frac{2}{3}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{2}} \\sin^{4} x \\, dx`,
-          steps: [
-            `\\sin^{2} x = \\frac{1 - \\cos 2x}{2} \\text{ を利用}`,
-            `\\sin^{4} x = \\left(\\frac{1 - \\cos 2x}{2}\\right)^{2}`,
-            `= \\frac{1}{4}(1 - 2\\cos 2x + \\cos^{2} 2x)`,
-            `\\text{さらに半角の公式を適用}`,
-            `= \\frac{3\\pi}{16}`
-          ],
-          answer: '\\frac{3\\pi}{16}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
+    // 問題生成関数（前回のものを使用）
+    ${generateAllProblemFunctions()}
 
-    const generateDerivativeOverFunction = () => {
-      const patterns = [
-        {
-          problem: `\\int_{1}^{2} \\frac{2x}{x^{2} + 1} \\, dx`,
-          steps: [
-            `\\text{分子は分母の導関数: } (x^{2} + 1)' = 2x`,
-            `t = x^{2} + 1 \\text{ とおくと } dt = 2x \\, dx`,
-            `x: 1 \\to 2 \\text{ のとき } t: 2 \\to 5`,
-            `= \\int_{2}^{5} \\frac{1}{t} \\, dt = [\\log t]_{2}^{5}`,
-            `= \\log 5 - \\log 2 = \\log \\frac{5}{2}`
-          ],
-          answer: '\\log \\frac{5}{2}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{1} \\frac{e^{x}}{e^{x} + 1} \\, dx`,
-          steps: [
-            `\\text{分子は分母の導関数: } (e^{x} + 1)' = e^{x}`,
-            `t = e^{x} + 1 \\text{ とおくと } dt = e^{x} \\, dx`,
-            `x: 0 \\to 1 \\text{ のとき } t: 2 \\to e + 1`,
-            `= \\int_{2}^{e+1} \\frac{1}{t} \\, dt`,
-            `= \\log(e + 1) - \\log 2 = \\log \\frac{e + 1}{2}`
-          ],
-          answer: '\\log \\frac{e + 1}{2}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{4}} \\frac{\\cos x}{\\sin x + 1} \\, dx`,
-          steps: [
-            `\\text{分子は分母の導関数: } (\\sin x + 1)' = \\cos x`,
-            `t = \\sin x + 1 \\text{ とおくと } dt = \\cos x \\, dx`,
-            `x: 0 \\to \\frac{\\pi}{4} \\text{ のとき } t: 1 \\to 1 + \\frac{\\sqrt{2}}{2}`,
-            `= [\\log t]_{1}^{1 + \\frac{\\sqrt{2}}{2}}`,
-            `= \\log(1 + \\frac{\\sqrt{2}}{2})`
-          ],
-          answer: '\\log(1 + \\frac{\\sqrt{2}}{2})',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generateLogDerivative = () => {
-      const patterns = [
-        {
-          problem: `\\int_{1}^{e} \\frac{1}{x(\\log x + 1)} \\, dx`,
-          steps: [
-            `\\text{対数微分型: } \\frac{d}{dx}[\\log(\\log x + 1)] = \\frac{1}{x(\\log x + 1)}`,
-            `= [\\log(\\log x + 1)]_{1}^{e}`,
-            `= \\log(\\log e + 1) - \\log(\\log 1 + 1)`,
-            `= \\log 2 - \\log 1`,
-            `= \\log 2`
-          ],
-          answer: '\\log 2',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{1}^{2} \\frac{\\log x}{x} \\, dx`,
-          steps: [
-            `\\text{対数微分型を利用}`,
-            `\\frac{d}{dx}[\\frac{(\\log x)^{2}}{2}] = \\frac{\\log x}{x}`,
-            `= \\left[ \\frac{(\\log x)^{2}}{2} \\right]_{1}^{2}`,
-            `= \\frac{(\\log 2)^{2}}{2} - 0`,
-            `= \\frac{(\\log 2)^{2}}{2}`
-          ],
-          answer: '\\frac{(\\log 2)^{2}}{2}',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{1}^{e} \\frac{1 + \\log x}{x} \\, dx`,
-          steps: [
-            `= \\int_{1}^{e} \\frac{1}{x} \\, dx + \\int_{1}^{e} \\frac{\\log x}{x} \\, dx`,
-            `= [\\log x]_{1}^{e} + \\left[\\frac{(\\log x)^{2}}{2}\\right]_{1}^{e}`,
-            `= (1 - 0) + (\\frac{1}{2} - 0)`,
-            `= \\frac{3}{2}`
-          ],
-          answer: '\\frac{3}{2}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generatePolyTrig = () => {
-      const patterns = [
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{2}} x \\sin x \\, dx`,
-          steps: [
-            `\\text{部分積分: } u = x, \\, dv = \\sin x \\, dx`,
-            `du = dx, \\, v = -\\cos x`,
-            `= [-x \\cos x]_{0}^{\\frac{\\pi}{2}} + \\int_{0}^{\\frac{\\pi}{2}} \\cos x \\, dx`,
-            `= 0 + [\\sin x]_{0}^{\\frac{\\pi}{2}}`,
-            `= 1`
-          ],
-          answer: '1',
-          isLatex: false
-        },
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{4}} x \\cos x \\, dx`,
-          steps: [
-            `\\text{部分積分: } u = x, \\, dv = \\cos x \\, dx`,
-            `du = dx, \\, v = \\sin x`,
-            `= [x \\sin x]_{0}^{\\frac{\\pi}{4}} - \\int_{0}^{\\frac{\\pi}{4}} \\sin x \\, dx`,
-            `= \\frac{\\pi}{4} \\cdot \\frac{\\sqrt{2}}{2} + [\\cos x]_{0}^{\\frac{\\pi}{4}}`,
-            `= \\frac{\\pi \\sqrt{2}}{8} + \\frac{\\sqrt{2}}{2} - 1`
-          ],
-          answer: '\\frac{\\pi \\sqrt{2}}{8} + \\frac{\\sqrt{2}}{2} - 1',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generatePolyExp = () => {
-      const patterns = [
-        {
-          problem: `\\int_{0}^{1} xe^{x} \\, dx`,
-          steps: [
-            `\\text{部分積分: } u = x, \\, dv = e^{x} \\, dx`,
-            `du = dx, \\, v = e^{x}`,
-            `= [xe^{x}]_{0}^{1} - \\int_{0}^{1} e^{x} \\, dx`,
-            `= e - [e^{x}]_{0}^{1}`,
-            `= e - (e - 1) = 1`
-          ],
-          answer: '1',
-          isLatex: false
-        },
-        {
-          problem: `\\int_{0}^{1} x^{2}e^{x} \\, dx`,
-          steps: [
-            `\\text{部分積分を2回適用}`,
-            `u = x^{2}, \\, dv = e^{x} \\, dx`,
-            `= [x^{2}e^{x}]_{0}^{1} - 2\\int_{0}^{1} xe^{x} \\, dx`,
-            `\\text{さらに部分積分}`,
-            `= e - 2(e - 1) = e - 2e + 2 = 2 - e`
-          ],
-          answer: '2 - e',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generateSubstitution = () => {
-      const patterns = [
-        {
-          problem: `\\int_{0}^{\\frac{\\pi}{4}} \\tan x \\, dx`,
-          steps: [
-            `\\int \\tan x \\, dx = \\int \\frac{\\sin x}{\\cos x} \\, dx`,
-            `t = \\cos x \\text{ とおくと } dt = -\\sin x \\, dx`,
-            `= -\\int \\frac{1}{t} \\, dt = -\\log |t| = -\\log |\\cos x|`,
-            `= [-\\log \\cos x]_{0}^{\\frac{\\pi}{4}}`,
-            `= -\\log \\frac{\\sqrt{2}}{2} = \\frac{1}{2}\\log 2`
-          ],
-          answer: '\\frac{1}{2}\\log 2',
-          isLatex: true
-        },
-        {
-          problem: `\\int_{1}^{e} \\frac{\\log x}{x} \\, dx`,
-          steps: [
-            `t = \\log x \\text{ とおくと } dt = \\frac{1}{x} \\, dx`,
-            `x: 1 \\to e \\text{ のとき } t: 0 \\to 1`,
-            `= \\int_{0}^{1} t \\, dt`,
-            `= \\left[ \\frac{t^{2}}{2} \\right]_{0}^{1}`,
-            `= \\frac{1}{2}`
-          ],
-          answer: '\\frac{1}{2}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generateParts = () => {
-      const patterns = [
-        {
-          problem: `\\int_{1}^{e} \\log x \\, dx`,
-          steps: [
-            `\\text{部分積分: } u = \\log x, \\, dv = dx`,
-            `du = \\frac{1}{x} \\, dx, \\, v = x`,
-            `= [x \\log x]_{1}^{e} - \\int_{1}^{e} x \\cdot \\frac{1}{x} \\, dx`,
-            `= (e \\cdot 1 - 1 \\cdot 0) - [x]_{1}^{e}`,
-            `= e - (e - 1) = 1`
-          ],
-          answer: '1',
-          isLatex: false
-        },
-        {
-          problem: `\\int_{0}^{1} e^{x} \\sin x \\, dx`,
-          steps: [
-            `\\text{部分積分を2回適用}`,
-            `I = [-e^{x} \\cos x]_{0}^{1} + \\int_{0}^{1} e^{x} \\cos x \\, dx`,
-            `= -e \\cos 1 + 1 + [e^{x} \\sin x]_{0}^{1} - I`,
-            `2I = e(\\sin 1 - \\cos 1) + 1`,
-            `I = \\frac{e(\\sin 1 - \\cos 1) + 1}{2}`
-          ],
-          answer: '\\frac{e(\\sin 1 - \\cos 1) + 1}{2}',
-          isLatex: true
-        }
-      ];
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-
-    const generateTrigonometric = () => {
-      const funcs = [
-        { name: '\\sin', display: 'sin', integral: '-\\cos', 
-          calc: (upper, lower) => -Math.cos(upper) + Math.cos(lower),
-          answerFunc: (upper) => {
-            if (upper === Math.PI/2) return { latex: '1', isLatex: false };
-            if (upper === Math.PI/3) return { latex: '\\frac{1}{2}', isLatex: true };
-            if (upper === Math.PI/4) return { latex: '1 - \\frac{\\sqrt{2}}{2}', isLatex: true };
-            if (upper === Math.PI/6) return { latex: '1 - \\frac{\\sqrt{3}}{2}', isLatex: true };
-          }
-        },
-        { name: '\\cos', display: 'cos', integral: '\\sin',
-          calc: (upper, lower) => Math.sin(upper) - Math.sin(lower),
-          answerFunc: (upper) => {
-            if (upper === Math.PI/2) return { latex: '1', isLatex: false };
-            if (upper === Math.PI/3) return { latex: '\\frac{\\sqrt{3}}{2}', isLatex: true };
-            if (upper === Math.PI/4) return { latex: '\\frac{\\sqrt{2}}{2}', isLatex: true };
-            if (upper === Math.PI/6) return { latex: '\\frac{1}{2}', isLatex: true };
-          }
-        }
-      ];
-      
-      const func = funcs[Math.floor(Math.random() * funcs.length)];
-      const lower = 0;
-      const upperChoices = [Math.PI/6, Math.PI/4, Math.PI/3, Math.PI/2];
-      const upper = upperChoices[Math.floor(Math.random() * upperChoices.length)];
-      
-      const upperStr = upper === Math.PI/2 ? '\\frac{\\pi}{2}' : 
-                       upper === Math.PI/3 ? '\\frac{\\pi}{3}' :
-                       upper === Math.PI/4 ? '\\frac{\\pi}{4}' : '\\frac{\\pi}{6}';
-      
-      const answer = func.calc(upper, lower);
-      const answerObj = func.answerFunc(upper);
-      
-      return {
-        problem: `\\int_{0}^{${upperStr}} ${func.name} x \\, dx`,
-        steps: [
-          `\\text{原始関数: } \\int ${func.name} x \\, dx = ${func.integral} x + C`,
-          `\\text{定積分の計算: } \\left[ ${func.integral} x \\right]_{0}^{${upperStr}}`,
-          `\\text{代入して計算}`
-        ],
-        answer: answerObj.latex,
-        isLatex: answerObj.isLatex
-      };
-    };
-
-    const generateExponential = () => {
-      const a = Math.floor(Math.random() * 3) + 1;
-      const lower = 0;
-      const upper = Math.floor(Math.random() * 2) + 1;
-      
-      const answer = a * (Math.exp(upper) - Math.exp(lower));
-      let answerLatex;
-      
-      if (upper === 1) {
-        answerLatex = a === 1 ? 'e - 1' : `${a}(e - 1)`;
-      } else {
-        answerLatex = a === 1 ? `e^{${upper}} - 1` : `${a}(e^{${upper}} - 1)`;
-      }
-      
-      const aStr = a === 1 ? '' : `${a}`;
-      const integral = a === 1 ? 'e^{x}' : `${a}e^{x}`;
-      
-      return {
-        problem: `\\int_{0}^{${upper}} ${aStr}e^{x} \\, dx`,
-        steps: [
-          `\\text{原始関数: } \\int ${aStr}e^{x} \\, dx = ${integral} + C`,
-          `\\text{定積分の計算: } \\left[ ${integral} \\right]_{0}^{${upper}}`,
-          `= ${aStr}e^{${upper}} - ${aStr}e^{0}`,
-          upper === 1 
-            ? `= ${aStr}e - ${a}` 
-            : `= ${a === 1 ? '' : a}(e^{${upper}} - 1)`
-        ],
-        answer: answerLatex,
-        isLatex: true
-      };
-    };
-
-    const generateRational = () => {
-      const lower = 1;
-      const upper = Math.floor(Math.random() * 3) + 2;
-      
-      const answer = Math.log(upper) - Math.log(lower);
-      const answerLatex = `\\log ${upper}`;
-      
-      return {
-        problem: `\\int_{1}^{${upper}} \\frac{1}{x} \\, dx`,
-        steps: [
-          `\\text{原始関数: } \\int \\frac{1}{x} \\, dx = \\log |x| + C`,
-          `\\text{定積分の計算: } \\left[ \\log x \\right]_{1}^{${upper}}`,
-          `= \\log ${upper} - \\log 1`,
-          `= \\log ${upper}`
-        ],
-        answer: answerLatex,
-        isLatex: true
-      };
-    };
-
-    const generateMixed = () => {
-      const a = Math.floor(Math.random() * 3) + 1;
-      const lower = 0;
-      const upper = 1;
-      
-      const answer = a * (Math.exp(upper) - Math.exp(lower)) + upper;
-      const answerLatex = a === 2 ? '2e - 1' : a === 3 ? '3e - 2' : 'e';
-      
-      const aStr = a === 1 ? '' : `${a}`;
-      const integral = a === 1 ? 'e^{x}' : `${a}e^{x}`;
-      
-      return {
-        problem: `\\int_{0}^{1} (${aStr}e^{x} + 1) \\, dx`,
-        steps: [
-          `\\text{項別に積分: } \\int ${aStr}e^{x} \\, dx + \\int 1 \\, dx`,
-          `= ${integral} + x + C`,
-          `\\text{定積分の計算: } \\left[ ${integral} + x \\right]_{0}^{1}`,
-          `= (${aStr}e + 1) - ${a}`,
-          `= ${answerLatex}`
-        ],
-        answer: answerLatex,
-        isLatex: true
-      };
-    };
-
-    function MathIntegrationApp() {
+    function IntegrationMasterApp() {
+      const [activeTab, setActiveTab] = useState('dashboard');
       const [currentProblem, setCurrentProblem] = useState(null);
+      const [showHint, setShowHint] = useState(false);
       const [showAnswer, setShowAnswer] = useState(false);
-      const [stats, setStats] = useState({ attempted: 0, correct: 0 });
+      const [showMistakeModal, setShowMistakeModal] = useState(false);
+      const [stats, setStats] = useState({
+        attempted: 0,
+        correct: 0,
+        streak: 0,
+        lastStudyDate: null,
+        xp: 0,
+        typeStats: {},
+        mistakes: {}
+      });
+      const radarChartRef = useRef(null);
+      const radarChartInstance = useRef(null);
 
+      // 初期化
       useEffect(() => {
-        setCurrentProblem(generateProblem());
-        const savedStats = localStorage.getItem('mathStats');
-        if (savedStats) {
-          setStats(JSON.parse(savedStats));
+        const saved = localStorage.getItem('integrationMasterStats');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setStats(parsed);
+          
+          // ストリーク確認
+          const today = new Date().toDateString();
+          if (parsed.lastStudyDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (parsed.lastStudyDate !== yesterday.toDateString()) {
+              parsed.streak = 0;
+            }
+          }
         }
+        setCurrentProblem(generateProblem());
       }, []);
 
-      const handleNextProblem = () => {
+      // レーダーチャート描画
+      useEffect(() => {
+        if (activeTab === 'dashboard' && radarChartRef.current) {
+          const ctx = radarChartRef.current.getContext('2d');
+          
+          if (radarChartInstance.current) {
+            radarChartInstance.current.destroy();
+          }
+
+          const types = Object.keys(PROBLEM_TYPES);
+          const data = types.map(type => {
+            const typeData = stats.typeStats[type] || { attempted: 0, correct: 0 };
+            return typeData.attempted > 0 
+              ? Math.round((typeData.correct / typeData.attempted) * 100)
+              : 0;
+          });
+
+          radarChartInstance.current = new Chart(ctx, {
+            type: 'radar',
+            data: {
+              labels: types.map(t => PROBLEM_TYPES[t].name),
+              datasets: [{
+                label: '正答率 (%)',
+                data: data,
+                fill: true,
+                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                borderColor: 'rgb(102, 126, 234)',
+                pointBackgroundColor: 'rgb(102, 126, 234)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(102, 126, 234)'
+              }]
+            },
+            options: {
+              elements: {
+                line: {
+                  borderWidth: 3
+                }
+              },
+              scales: {
+                r: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: {
+                    stepSize: 20
+                  }
+                }
+              }
+            }
+          });
+        }
+      }, [activeTab, stats]);
+
+      // 統計保存
+      const saveStats = (newStats) => {
+        localStorage.setItem('integrationMasterStats', JSON.stringify(newStats));
+        setStats(newStats);
+      };
+
+      // 現在のランク取得
+      const getCurrentRank = () => {
+        for (let i = RANKS.length - 1; i >= 0; i--) {
+          if (stats.xp >= RANKS[i].minXP) {
+            return RANKS[i];
+          }
+        }
+        return RANKS[0];
+      };
+
+      // 次のランクまでのXP
+      const getNextRankProgress = () => {
+        const currentRank = getCurrentRank();
+        const currentIndex = RANKS.indexOf(currentRank);
+        if (currentIndex === RANKS.length - 1) {
+          return { current: stats.xp, max: stats.xp, percentage: 100 };
+        }
+        const nextRank = RANKS[currentIndex + 1];
+        const current = stats.xp - currentRank.minXP;
+        const max = nextRank.minXP - currentRank.minXP;
+        return { current, max, percentage: Math.round((current / max) * 100) };
+      };
+
+      // 問題タイプの統計更新
+      const updateTypeStats = (type, correct) => {
+        const newTypeStats = { ...stats.typeStats };
+        if (!newTypeStats[type]) {
+          newTypeStats[type] = { attempted: 0, correct: 0 };
+        }
+        newTypeStats[type].attempted++;
+        if (correct) {
+          newTypeStats[type].correct++;
+        }
+        return newTypeStats;
+      };
+
+      // ヒント表示
+      const handleShowHint = () => {
+        setShowHint(true);
+      };
+
+      // 答え表示
+      const handleShowAnswer = () => {
+        setShowAnswer(true);
+      };
+
+      // 正答
+      const handleCorrect = () => {
+        const today = new Date().toDateString();
+        const newStreak = stats.lastStudyDate === today ? stats.streak : stats.streak + 1;
+        
+        const newStats = {
+          ...stats,
+          attempted: stats.attempted + 1,
+          correct: stats.correct + 1,
+          streak: newStreak,
+          lastStudyDate: today,
+          xp: stats.xp + (showAnswer ? 5 : showHint ? 8 : 10),
+          typeStats: updateTypeStats(currentProblem.type, true)
+        };
+        
+        saveStats(newStats);
+        nextProblem();
+      };
+
+      // 失敗（ミス分析モーダル表示）
+      const handleIncorrect = () => {
+        setShowMistakeModal(true);
+      };
+
+      // ミス記録して次へ
+      const recordMistake = (mistakeType) => {
+        const today = new Date().toDateString();
+        const newStreak = stats.lastStudyDate === today ? stats.streak : stats.streak + 1;
+        
+        const newMistakes = { ...stats.mistakes };
+        newMistakes[mistakeType] = (newMistakes[mistakeType] || 0) + 1;
+        
+        const newStats = {
+          ...stats,
+          attempted: stats.attempted + 1,
+          streak: newStreak,
+          lastStudyDate: today,
+          xp: stats.xp + 2,
+          typeStats: updateTypeStats(currentProblem.type, false),
+          mistakes: newMistakes
+        };
+        
+        saveStats(newStats);
+        setShowMistakeModal(false);
+        nextProblem();
+      };
+
+      // 次の問題
+      const nextProblem = () => {
         setCurrentProblem(generateProblem());
+        setShowHint(false);
         setShowAnswer(false);
       };
 
-      const handleCorrect = () => {
-        const newStats = { 
-          attempted: stats.attempted + 1, 
-          correct: stats.correct + 1 
-        };
-        setStats(newStats);
-        localStorage.setItem('mathStats', JSON.stringify(newStats));
-        handleNextProblem();
-      };
-
-      const handleIncorrect = () => {
-        const newStats = { 
-          attempted: stats.attempted + 1, 
-          correct: stats.correct 
-        };
-        setStats(newStats);
-        localStorage.setItem('mathStats', JSON.stringify(newStats));
-        handleNextProblem();
-      };
-
-      const toggleAnswer = () => {
-        setShowAnswer(!showAnswer);
-      };
-
+      // 統計リセット
       const resetStats = () => {
-        const newStats = { attempted: 0, correct: 0 };
-        setStats(newStats);
-        localStorage.setItem('mathStats', JSON.stringify(newStats));
+        if (confirm('本当に統計をリセットしますか？')) {
+          const newStats = {
+            attempted: 0,
+            correct: 0,
+            streak: 0,
+            lastStudyDate: null,
+            xp: 0,
+            typeStats: {},
+            mistakes: {}
+          };
+          saveStats(newStats);
+        }
       };
 
       if (!currentProblem) return <div className="loading">読み込み中...</div>;
 
+      const currentRank = getCurrentRank();
+      const rankProgress = getNextRankProgress();
+      const accuracyRate = stats.attempted > 0 
+        ? Math.round((stats.correct / stats.attempted) * 100) 
+        : 0;
+
       return (
         <div className="app-container">
-          <div className="header">
-            <h1>定積分 練習アプリ</h1>
-            <p>数学Ⅲ レベル</p>
+          {/* タブナビゲーション */}
+          <div className="tab-nav">
+            <button 
+              className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              📊 ダッシュボード
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
+              onClick={() => setActiveTab('training')}
+            >
+              ✏️ トレーニング
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'analysis' ? 'active' : ''}`}
+              onClick={() => setActiveTab('analysis')}
+            >
+              📈 分析
+            </button>
           </div>
 
-          <div className="stats-bar">
-            <div className="stat-item">
-              <div className="stat-label">挑戦数</div>
-              <div className="stat-value">{stats.attempted}</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-label">正解数</div>
-              <div className="stat-value">{stats.correct}</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-label">正答率</div>
-              <div className="stat-value">
-                {stats.attempted > 0 
-                  ? `${Math.round((stats.correct / stats.attempted) * 100)}%` 
-                  : '-%'}
+          {/* ダッシュボード */}
+          <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
+            <div className="dashboard">
+              {/* ランク表示 */}
+              <div className="card" style={{gridColumn: 'span 2'}}>
+                <div className="rank-display">
+                  <div className="rank-title">{currentRank.icon} {currentRank.name}</div>
+                  <div className="rank-subtitle">経験値: {stats.xp} XP</div>
+                  <div className="xp-bar">
+                    <div className="xp-fill" style={{width: `${rankProgress.percentage}%`}}></div>
+                  </div>
+                  <div className="xp-text">
+                    次のランクまで: {rankProgress.current} / {rankProgress.max} XP
+                  </div>
+                </div>
+              </div>
+
+              {/* ストリーク */}
+              <div className="card">
+                <div className="streak-display">
+                  <div className="streak-icon">🔥</div>
+                  <div className="streak-info">
+                    <div className="streak-number">{stats.streak}日</div>
+                    <div className="streak-text">連続学習中！</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 統計 */}
+              <div className="card">
+                <div className="card-title">📊 学習統計</div>
+                <div className="stats-grid">
+                  <div className="stat-box">
+                    <div className="stat-value">{stats.attempted}</div>
+                    <div className="stat-label">挑戦数</div>
+                  </div>
+                  <div className="stat-box">
+                    <div className="stat-value">{stats.correct}</div>
+                    <div className="stat-label">正解数</div>
+                  </div>
+                  <div className="stat-box" style={{gridColumn: 'span 2'}}>
+                    <div className="stat-value">{accuracyRate}%</div>
+                    <div className="stat-label">正答率</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* レーダーチャート */}
+              <div className="card" style={{gridColumn: 'span 2'}}>
+                <div className="card-title">🎯 分野別習得度</div>
+                <div className="chart-container">
+                  <canvas ref={radarChartRef}></canvas>
+                </div>
               </div>
             </div>
-            <div className="stat-item">
-              <button className="btn btn-reset" onClick={resetStats}>
-                🔄 リセット
+
+            <div style={{marginTop: '20px', textAlign: 'center'}}>
+              <button className="btn btn-incorrect" onClick={resetStats}>
+                🔄 統計をリセット
               </button>
             </div>
           </div>
 
-          <div className="problem-card">
-            <div className="problem-label">問題</div>
-            <div className="problem-text">
-              <MathDisplay latex={currentProblem.problem} block={true} />
-            </div>
-
-            <div className={`answer-section ${!showAnswer ? 'hidden' : ''}`}>
-              <div className="steps">
-                <div className="step-label">解法</div>
-                {currentProblem.steps.map((step, index) => (
-                  <div key={index} className="step">
-                    <MathDisplay latex={step} />
+          {/* トレーニング */}
+          <div className={`tab-content ${activeTab === 'training' ? 'active' : ''}`}>
+            <div className="training-container">
+              <div className="problem-card">
+                <div className="problem-header">
+                  <div className="problem-type">
+                    {PROBLEM_TYPES[currentProblem.type]?.name || '問題'}
                   </div>
-                ))}
+                  <div className="problem-number">
+                    問題 #{stats.attempted + 1}
+                  </div>
+                </div>
+
+                <div className="problem-display">
+                  <MathDisplay latex={currentProblem.problem} block={true} />
+                </div>
+
+                {/* ヒント */}
+                {currentProblem.hint && (
+                  <div className={`hint-section ${showHint ? 'show' : ''}`}>
+                    <div className="hint-title">💡 ヒント</div>
+                    <div>{currentProblem.hint}</div>
+                  </div>
+                )}
+
+                {/* 答え */}
+                <div className={`answer-section ${showAnswer ? 'show' : ''}`}>
+                  <div className="answer-steps">
+                    {currentProblem.steps.map((step, i) => (
+                      <div key={i} className="step">
+                        <MathDisplay latex={step} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="final-answer">
+                    <div className="final-answer-label">答え</div>
+                    <div className="final-answer-value">
+                      {currentProblem.isLatex ? (
+                        <MathDisplay latex={currentProblem.answer} />
+                      ) : (
+                        currentProblem.answer
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ボタン */}
+                <div className="button-group">
+                  {!showAnswer && currentProblem.hint && !showHint && (
+                    <button className="btn btn-hint" onClick={handleShowHint}>
+                      💡 ヒント
+                    </button>
+                  )}
+                  {!showAnswer && (
+                    <button className="btn btn-show" onClick={handleShowAnswer}>
+                      👁 答えを見る
+                    </button>
+                  )}
+                  <button className="btn btn-correct" onClick={handleCorrect}>
+                    ✓ 正答
+                  </button>
+                  <button className="btn btn-incorrect" onClick={handleIncorrect}>
+                    ✗ 失敗
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 分析 */}
+          <div className={`tab-content ${activeTab === 'analysis' ? 'active' : ''}`}>
+            <div className="analysis-grid">
+              <div className="card">
+                <div className="card-title">❌ ミス分析</div>
+                <div className="mistake-analysis">
+                  {Object.keys(stats.mistakes).length > 0 ? (
+                    <div className="mistake-list">
+                      {MISTAKE_TYPES.map(type => {
+                        const count = stats.mistakes[type] || 0;
+                        const maxCount = Math.max(...Object.values(stats.mistakes));
+                        const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        
+                        return (
+                          <div key={type} className="mistake-item">
+                            <div className="mistake-name">{type}</div>
+                            <div className="mistake-count">
+                              <div className="mistake-bar">
+                                <div className="mistake-bar-fill" style={{width: `${percentage}%`}}></div>
+                              </div>
+                              <div className="mistake-number">{count}回</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p style={{textAlign: 'center', color: '#7f8c8d', padding: '40px 0'}}>
+                      まだミスの記録がありません
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div className="answer-box">
-                <div className="answer-label">答え</div>
-                <div className="answer-value">
-                  {currentProblem.isLatex ? (
-                    <MathDisplay latex={currentProblem.answer} />
+              <div className="card">
+                <div className="card-title">💬 アドバイス</div>
+                <div style={{padding: '20px', background: '#f8f9fa', borderRadius: '10px', lineHeight: 1.8}}>
+                  {stats.attempted === 0 ? (
+                    <p>まずはトレーニングを始めてみましょう！</p>
+                  ) : accuracyRate >= 80 ? (
+                    <p>素晴らしい！この調子で頑張りましょう 🎉</p>
+                  ) : accuracyRate >= 60 ? (
+                    <p>良いペースです！復習を重ねて定着させましょう 💪</p>
                   ) : (
-                    currentProblem.answer
+                    <p>基礎をしっかり固めていきましょう。一問一問丁寧に！📚</p>
+                  )}
+                  
+                  {stats.mistakes['符号のミス'] > 5 && (
+                    <p style={{marginTop: '15px', color: '#e74c3c'}}>
+                      ⚠️ 符号のミスが多いようです。計算の際は特に注意しましょう。
+                    </p>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="controls">
-            {!showAnswer ? (
-              <>
-                <button className="btn btn-correct" onClick={handleCorrect}>
-                  ✓ 正答
-                </button>
-                <button className="btn btn-incorrect" onClick={handleIncorrect}>
-                  ✗ 失敗
-                </button>
-                <button className="btn btn-show" onClick={toggleAnswer}>
-                  👁 答えを見る
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="btn btn-correct" onClick={handleCorrect}>
-                  ✓ 正答
-                </button>
-                <button className="btn btn-incorrect" onClick={handleIncorrect}>
-                  ✗ 失敗
-                </button>
-                <button className="btn btn-hide" onClick={toggleAnswer}>
-                  🙈 答えを隠す
-                </button>
-              </>
-            )}
+          {/* ミス分析モーダル */}
+          <div className={`modal ${showMistakeModal ? 'show' : ''}`}>
+            <div className="modal-content">
+              <div className="modal-title">どこで間違えましたか？</div>
+              <div className="mistake-options">
+                {MISTAKE_TYPES.map(type => (
+                  <div 
+                    key={type}
+                    className="mistake-option"
+                    onClick={() => recordMistake(type)}
+                  >
+                    {type}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       );
     }
 
-    // Render the app
+    // 問題生成関数を返す
+    function generateAllProblemFunctions() {
+      return \`
+        const generateProblem = () => {
+          const types = Object.keys(PROBLEM_TYPES);
+          const type = types[Math.floor(Math.random() * types.length)];
+          
+          const generators = {
+            trigonometric: generateTrigonometric,
+            exponential: generateExponential,
+            rational: generateRational,
+            poly_trig: generatePolyTrig,
+            poly_exp: generatePolyExp,
+            substitution: generateSubstitution,
+            parts: generateParts,
+            sqrt_function: generateSqrtFunction,
+            log_power: generateLogPower,
+            trig_power: generateTrigPower,
+            derivative_over_function: generateDerivativeOverFunction,
+            log_derivative: generateLogDerivative
+          };
+          
+          const problem = generators[type]();
+          problem.type = type;
+          return problem;
+        };
+
+        // 各問題生成関数（前回のコードを使用）
+        const generateTrigonometric = () => {
+          const funcs = [
+            { name: '\\\\sin', integral: '-\\\\cos', 
+              calc: (u, l) => -Math.cos(u) + Math.cos(l),
+              answerFunc: (u) => {
+                if (u === Math.PI/2) return { latex: '1', isLatex: false };
+                if (u === Math.PI/3) return { latex: '\\\\frac{1}{2}', isLatex: true };
+                if (u === Math.PI/4) return { latex: '1 - \\\\frac{\\\\sqrt{2}}{2}', isLatex: true };
+                if (u === Math.PI/6) return { latex: '1 - \\\\frac{\\\\sqrt{3}}{2}', isLatex: true };
+              }
+            },
+            { name: '\\\\cos', integral: '\\\\sin',
+              calc: (u, l) => Math.sin(u) - Math.sin(l),
+              answerFunc: (u) => {
+                if (u === Math.PI/2) return { latex: '1', isLatex: false };
+                if (u === Math.PI/3) return { latex: '\\\\frac{\\\\sqrt{3}}{2}', isLatex: true };
+                if (u === Math.PI/4) return { latex: '\\\\frac{\\\\sqrt{2}}{2}', isLatex: true };
+                if (u === Math.PI/6) return { latex: '\\\\frac{1}{2}', isLatex: true };
+              }
+            }
+          ];
+          
+          const func = funcs[Math.floor(Math.random() * funcs.length)];
+          const upperChoices = [Math.PI/6, Math.PI/4, Math.PI/3, Math.PI/2];
+          const upper = upperChoices[Math.floor(Math.random() * upperChoices.length)];
+          
+          const upperStr = upper === Math.PI/2 ? '\\\\frac{\\\\pi}{2}' : 
+                           upper === Math.PI/3 ? '\\\\frac{\\\\pi}{3}' :
+                           upper === Math.PI/4 ? '\\\\frac{\\\\pi}{4}' : '\\\\frac{\\\\pi}{6}';
+          
+          const answerObj = func.answerFunc(upper);
+          
+          return {
+            problem: \`\\\\int_{0}^{\${upperStr}} \${func.name} x \\\\, dx\`,
+            steps: [
+              \`\\\\text{原始関数: } \\\\int \${func.name} x \\\\, dx = \${func.integral} x + C\`,
+              \`\\\\text{定積分の計算: } \\\\left[ \${func.integral} x \\\\right]_{0}^{\${upperStr}}\`,
+              \`\\\\text{代入して計算}\`
+            ],
+            answer: answerObj.latex,
+            isLatex: answerObj.isLatex,
+            hint: '三角関数の基本的な積分公式を使います'
+          };
+        };
+
+        const generateExponential = () => {
+          const a = Math.floor(Math.random() * 3) + 1;
+          const upper = Math.floor(Math.random() * 2) + 1;
+          
+          let answerLatex;
+          if (upper === 1) {
+            answerLatex = a === 1 ? 'e - 1' : \`\${a}(e - 1)\`;
+          } else {
+            answerLatex = a === 1 ? \`e^{\${upper}} - 1\` : \`\${a}(e^{\${upper}} - 1)\`;
+          }
+          
+          const aStr = a === 1 ? '' : \`\${a}\`;
+          const integral = a === 1 ? 'e^{x}' : \`\${a}e^{x}\`;
+          
+          return {
+            problem: \`\\\\int_{0}^{\${upper}} \${aStr}e^{x} \\\\, dx\`,
+            steps: [
+              \`\\\\text{原始関数: } \\\\int \${aStr}e^{x} \\\\, dx = \${integral} + C\`,
+              \`\\\\text{定積分の計算: } \\\\left[ \${integral} \\\\right]_{0}^{\${upper}}\`,
+              \`= \${aStr}e^{\${upper}} - \${aStr}e^{0}\`,
+              upper === 1 ? \`= \${aStr}e - \${a}\` : \`= \${a === 1 ? '' : a}(e^{\${upper}} - 1)\`
+            ],
+            answer: answerLatex,
+            isLatex: true,
+            hint: '指数関数の積分は元の形が保たれます'
+          };
+        };
+
+        const generateRational = () => {
+          const upper = Math.floor(Math.random() * 3) + 2;
+          
+          return {
+            problem: \`\\\\int_{1}^{\${upper}} \\\\frac{1}{x} \\\\, dx\`,
+            steps: [
+              \`\\\\text{原始関数: } \\\\int \\\\frac{1}{x} \\\\, dx = \\\\log |x| + C\`,
+              \`\\\\text{定積分の計算: } \\\\left[ \\\\log x \\\\right]_{1}^{\${upper}}\`,
+              \`= \\\\log \${upper} - \\\\log 1\`,
+              \`= \\\\log \${upper}\`
+            ],
+            answer: \`\\\\log \${upper}\`,
+            isLatex: true,
+            hint: '1/x の積分は対数関数です'
+          };
+        };
+
+        const generatePolyTrig = () => {
+          const patterns = [
+            {
+              problem: \`\\\\int_{0}^{\\\\frac{\\\\pi}{2}} x \\\\sin x \\\\, dx\`,
+              steps: [
+                \`\\\\text{部分積分: } u = x, \\\\, dv = \\\\sin x \\\\, dx\`,
+                \`du = dx, \\\\, v = -\\\\cos x\`,
+                \`= [-x \\\\cos x]_{0}^{\\\\frac{\\\\pi}{2}} + \\\\int_{0}^{\\\\frac{\\\\pi}{2}} \\\\cos x \\\\, dx\`,
+                \`= 0 + [\\\\sin x]_{0}^{\\\\frac{\\\\pi}{2}}\`,
+                \`= 1\`
+              ],
+              answer: '1',
+              isLatex: false,
+              hint: '部分積分法を使います: ∫udv = uv - ∫vdu'
+            }
+          ];
+          
+          return patterns[0];
+        };
+
+        const generatePolyExp = () => {
+          return {
+            problem: \`\\\\int_{0}^{1} xe^{x} \\\\, dx\`,
+            steps: [
+              \`\\\\text{部分積分: } u = x, \\\\, dv = e^{x} \\\\, dx\`,
+              \`du = dx, \\\\, v = e^{x}\`,
+              \`= [xe^{x}]_{0}^{1} - \\\\int_{0}^{1} e^{x} \\\\, dx\`,
+              \`= e - [e^{x}]_{0}^{1}\`,
+              \`= e - (e - 1) = 1\`
+            ],
+            answer: '1',
+            isLatex: false,
+            hint: '部分積分法を使います'
+          };
+        };
+
+        const generateSubstitution = () => {
+          return {
+            problem: \`\\\\int_{0}^{\\\\frac{\\\\pi}{4}} \\\\tan x \\\\, dx\`,
+            steps: [
+              \`\\\\int \\\\tan x \\\\, dx = \\\\int \\\\frac{\\\\sin x}{\\\\cos x} \\\\, dx\`,
+              \`t = \\\\cos x \\\\text{ とおくと } dt = -\\\\sin x \\\\, dx\`,
+              \`= -\\\\int \\\\frac{1}{t} \\\\, dt = -\\\\log |t|\`,
+              \`= [-\\\\log \\\\cos x]_{0}^{\\\\frac{\\\\pi}{4}}\`,
+              \`= \\\\frac{1}{2}\\\\log 2\`
+            ],
+            answer: '\\\\frac{1}{2}\\\\log 2',
+            isLatex: true,
+            hint: 't = cos x と置換してみましょう'
+          };
+        };
+
+        const generateParts = () => {
+          return {
+            problem: \`\\\\int_{1}^{e} \\\\log x \\\\, dx\`,
+            steps: [
+              \`\\\\text{部分積分: } u = \\\\log x, \\\\, dv = dx\`,
+              \`du = \\\\frac{1}{x} \\\\, dx, \\\\, v = x\`,
+              \`= [x \\\\log x]_{1}^{e} - \\\\int_{1}^{e} x \\\\cdot \\\\frac{1}{x} \\\\, dx\`,
+              \`= (e \\\\cdot 1 - 1 \\\\cdot 0) - [x]_{1}^{e}\`,
+              \`= e - (e - 1) = 1\`
+            ],
+            answer: '1',
+            isLatex: false,
+            hint: 'log x を u として部分積分します'
+          };
+        };
+
+        const generateSqrtFunction = () => {
+          return {
+            problem: \`\\\\int_{0}^{3} \\\\sqrt{x + 1} \\\\, dx\`,
+            steps: [
+              \`t = x + 1 \\\\text{ とおくと } dt = dx\`,
+              \`x: 0 \\\\to 3 \\\\text{ のとき } t: 1 \\\\to 4\`,
+              \`= \\\\int_{1}^{4} t^{\\\\frac{1}{2}} \\\\, dt\`,
+              \`= \\\\left[ \\\\frac{2}{3}t^{\\\\frac{3}{2}} \\\\right]_{1}^{4}\`,
+              \`= \\\\frac{2}{3}(8 - 1) = \\\\frac{14}{3}\`
+            ],
+            answer: '\\\\frac{14}{3}',
+            isLatex: true,
+            hint: 't = x + 1 と置換します'
+          };
+        };
+
+        const generateLogPower = () => {
+          return {
+            problem: \`\\\\int_{1}^{e} \\\\frac{(\\\\log x)^{2}}{x} \\\\, dx\`,
+            steps: [
+              \`t = \\\\log x \\\\text{ とおくと } dt = \\\\frac{1}{x} \\\\, dx\`,
+              \`x: 1 \\\\to e \\\\text{ のとき } t: 0 \\\\to 1\`,
+              \`= \\\\int_{0}^{1} t^{2} \\\\, dt\`,
+              \`= \\\\left[ \\\\frac{t^{3}}{3} \\\\right]_{0}^{1}\`,
+              \`= \\\\frac{1}{3}\`
+            ],
+            answer: '\\\\frac{1}{3}',
+            isLatex: true,
+            hint: 't = log x と置換します'
+          };
+        };
+
+        const generateTrigPower = () => {
+          return {
+            problem: \`\\\\int_{0}^{\\\\frac{\\\\pi}{2}} \\\\sin^{2} x \\\\, dx\`,
+            steps: [
+              \`\\\\text{半角の公式: } \\\\sin^{2} x = \\\\frac{1 - \\\\cos 2x}{2}\`,
+              \`= \\\\int_{0}^{\\\\frac{\\\\pi}{2}} \\\\frac{1 - \\\\cos 2x}{2} \\\\, dx\`,
+              \`= \\\\left[ \\\\frac{x}{2} - \\\\frac{\\\\sin 2x}{4} \\\\right]_{0}^{\\\\frac{\\\\pi}{2}}\`,
+              \`= \\\\frac{\\\\pi}{4}\`
+            ],
+            answer: '\\\\frac{\\\\pi}{4}',
+            isLatex: true,
+            hint: '半角の公式を使います: sin²x = (1-cos2x)/2'
+          };
+        };
+
+        const generateDerivativeOverFunction = () => {
+          return {
+            problem: \`\\\\int_{1}^{2} \\\\frac{2x}{x^{2} + 1} \\\\, dx\`,
+            steps: [
+              \`\\\\text{分子は分母の導関数: } (x^{2} + 1)' = 2x\`,
+              \`t = x^{2} + 1 \\\\text{ とおくと } dt = 2x \\\\, dx\`,
+              \`x: 1 \\\\to 2 \\\\text{ のとき } t: 2 \\\\to 5\`,
+              \`= \\\\int_{2}^{5} \\\\frac{1}{t} \\\\, dt = [\\\\log t]_{2}^{5}\`,
+              \`= \\\\log \\\\frac{5}{2}\`
+            ],
+            answer: '\\\\log \\\\frac{5}{2}',
+            isLatex: true,
+            hint: '分子が分母の導関数になっています'
+          };
+        };
+
+        const generateLogDerivative = () => {
+          return {
+            problem: \`\\\\int_{1}^{e} \\\\frac{1}{x(\\\\log x + 1)} \\\\, dx\`,
+            steps: [
+              \`\\\\text{対数微分型を利用}\`,
+              \`\\\\frac{d}{dx}[\\\\log(\\\\log x + 1)] = \\\\frac{1}{x(\\\\log x + 1)}\`,
+              \`= [\\\\log(\\\\log x + 1)]_{1}^{e}\`,
+              \`= \\\\log 2 - \\\\log 1 = \\\\log 2\`
+            ],
+            answer: '\\\\log 2',
+            isLatex: true,
+            hint: '対数微分の公式を思い出しましょう'
+          };
+        };
+      \`;
+    }
+
+    // Render
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<MathIntegrationApp />);
+    root.render(<IntegrationMasterApp />);
   </script>
 </body>
 </html>
